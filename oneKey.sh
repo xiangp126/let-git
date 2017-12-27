@@ -94,8 +94,10 @@ _EOF
     cd $clonedName
     # checkout to v2.15.0
     git checkout $checkoutVersion
-    # directly run make
-    make prefix=$gitInstDir -j
+    # run make routine
+    make configure
+    ./configure --prefix=$gitInstDir
+    make -j
     make install
 
     cat << _EOF
