@@ -97,7 +97,7 @@ _EOF
     # run make routine
     make configure
     ./configure --prefix=$gitInstDir
-    make -j
+    make -j 1
     make install
 
     cat << _EOF
