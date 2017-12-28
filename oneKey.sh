@@ -100,6 +100,15 @@ _EOF
     make -j 1
     make install
 
+    cat << "_EOF"
+------------------------------------------------------
+Installing Git Completion Bash ...
+------------------------------------------------------
+_EOF
+    gitCompletionBashPath=~/.git-completion.bash
+    cp -f contrib/completion/git-completion.bash $gitCompletionBashPath
+    source $gitCompletionBashPath
+
     cat << _EOF
     
 ------------------------------------------------------
