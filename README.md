@@ -7,10 +7,14 @@ suitable for Ubuntu and CentOS
 $ sh oneKey.sh
 
 [NAME]
-        oneKey.sh -- setup Git through one script
+    oneKey.sh -- setup Git through one script
 
-[USAGE]
-        oneKey.sh [install | help]
+[SYNOPSIS]
+    oneKey.sh [home | root | help]
+
+[DESCRIPTION]
+    home -- install to /home/corsair/.usr/
+    root -- install to /usr/local/
 
   ____ ___ _____
  / ___|_ _|_   _|
