@@ -6,10 +6,12 @@ startDir=`pwd`
 # main work directory, usually ~/myGit
 mainWd=$startDir
 
-# common install directory
-commInstdir=~/.usr
+# common install dir for home | root mode
+homeInstDir=~/.usr
+rootInstDir=/usr/local
+# default is home mode
+commInstdir=$homeInstDir
 gitInstDir=$commInstdir
-mkdir -p $commInstdir
 
 logo() {
     cat << "_EOF"
@@ -23,13 +25,17 @@ _EOF
 }
 
 usage() {
-	exeName=${0##*/}
+    exeName=${0##*/}
     cat << _EOF
 [NAME]
-	$exeName -- setup Git through one script
+    $exeName -- setup Git through one script
 
-[USAGE]
-	$exeName [install | help]
+[SYNOPSIS]
+    $exeName [home | root | help]
+
+[DESCRIPTION]
+    home -- install to $homeInstDir/
+    root -- install to $rootInstDir/
 
 _EOF
 	logo
@@ -72,10 +78,22 @@ _EOF
 
     fi
 
+    execPrefix=""
+    case $1 in
+        'home')
+        ;;
+
+        'root')
+            commInstdir=/usr/local
+            execPrefix=sudo
+        ;;
+    esac
+
     gitInstDir=$commInstdir
     gitClonePath=https://github.com/git/git
     clonedName=git
     checkoutVersion=v2.15.0
+    $execPrefix mkdir -p $commInstdir
 
     # rename download package
     cd $startDir
@@ -98,11 +116,11 @@ _EOF
     make configure
     ./configure --prefix=$gitInstDir
     make -j 1
-    make install
+    $execPrefix make install
 
     cat << "_EOF"
 ------------------------------------------------------
-Installing Git Completion Bash ...
+Installing Git Completion Bash To Home ...
 ------------------------------------------------------
 _EOF
     gitCompletionBashPath=~/.git-completion.bash
@@ -120,12 +138,13 @@ _EOF
 }
 
 install() {
-    installGit
+    installGit $1
 }
 
+echo $1
 case $1 in
-    'install')
-        install
+    'home' | 'root')
+        install $1
     ;;
 
     *)
