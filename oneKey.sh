@@ -84,16 +84,17 @@ _EOF
         ;;
 
         'root')
-            commInstdir=/usr/local
+            commInstdir=$rootInstDir
             execPrefix=sudo
         ;;
     esac
 
     gitInstDir=$commInstdir
+    $execPrefix mkdir -p $commInstdir
+    # comm attribute to get source 'git'
     gitClonePath=https://github.com/git/git
     clonedName=git
     checkoutVersion=v2.15.0
-    $execPrefix mkdir -p $commInstdir
 
     # rename download package
     cd $startDir
