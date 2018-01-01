@@ -50,33 +50,58 @@ STEP 1: INSTALLING GIT ...
 ------------------------------------------------------
 _EOF
 
-    # libcurl  libcurl - Library to transfer files with ftp, http, etc.
-    whereIsLibcurl=`pkg-config --list-all | grep -i curl`
-    if [[ "$whereIsLibcurl" == "" ]]; then
-        echo No libcurl-dev found, install it first 
-        echo verifying platform is Ubuntu or Centos ...
-        osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
-            grep -i "[ubuntu|centos]"`
+    # check OS Type first.
+    osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
+        grep -i "[ubuntu|centos]"`
+    
+    case "$osType" in
+        'CentOS')
+            echo OS is CentOS
+            sudo yum install libcurl-devel
+        ;;
+    
+        'Ubuntu')
+            echo OS is Ubuntu
+            sudo apt-get install libcurl4-openssl-dev
+            sudo apt-get install libssl-dev automake
+        ;;
+    
+        *)
+            echo Not Ubuntu or CentOS, not sure whether this script would work
+            echo Please check it yourself ...
+            exit
+        ;;
+    esac
 
-        case "$osType" in
-            'CentOS')
-                echo OS is CentOS
-                sudo yum install libcurl-devel
-            ;;
-
-            'Ubuntu')
-                echo OS is Ubuntu
-                sudo apt-get install libcurl4-openssl-dev
-            ;;
-
-            *)
-                echo Not Ubuntu or CentOS, not sure whether this script would work
-                echo Please check it yourself ...
-                exit
-            ;;
-        esac
-
-    fi
+#    # libcurl  libcurl - Library to transfer files with ftp, http, etc.
+#    whereIsLibcurl=`pkg-config --list-all | grep -i curl`
+#    if [[ "$whereIsLibcurl" == "" ]]; then
+#        echo No libcurl-dev found, install it first 
+#        echo verifying platform is Ubuntu or Centos ...
+#        osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
+#            grep -i "[ubuntu|centos]"`
+#
+#        case "$osType" in
+#            'CentOS')
+#                echo OS is CentOS
+#                sudo yum install libcurl-devel
+#            ;;
+#
+#            'Ubuntu')
+#                echo OS is Ubuntu
+#                sudo apt-get install libcurl4-openssl-dev
+#                sudo apt-get install libssl-dev
+#                sudo apt-get install automake
+#            ;;
+#
+#            *)
+#                echo Not Ubuntu or CentOS, not sure whether this script would work
+#                echo Please check it yourself ...
+#                exit
+#            ;;
+#        esac
+#
+#    fi
 
     execPrefix=""
     case $1 in
@@ -117,6 +142,13 @@ _EOF
     make configure
     ./configure --prefix=$gitInstDir
     make -j 1
+
+	# check if make returns successfully
+	if [[ $? != 0 ]]; then
+		echo [Error]: make returns error, quiting now ...
+		exit
+	fi
+
     $execPrefix make install
 
     cat << "_EOF"
