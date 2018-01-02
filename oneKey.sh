@@ -11,6 +11,8 @@ homeInstDir=~/.usr
 rootInstDir=/usr/local
 # default is home mode
 commInstdir=$homeInstDir
+execPrefix=""
+# GIT install
 gitInstDir=$commInstdir
 
 # depends pkgs for Ubuntu
@@ -61,18 +63,6 @@ installGit() {
 STEP 1: INSTALLING GIT ...
 ------------------------------------------------------
 _EOF
-
-    execPrefix=""
-    case $1 in
-        'home')
-            commInstdir=$homeInstDir
-        ;;
-
-        'root')
-            commInstdir=$rootInstDir
-            execPrefix=sudo
-        ;;
-    esac
 
     # libcurl  libcurl - Library to transfer files with ftp, http, etc.
     whereIsLibcurl=`pkg-config --list-all | grep -i curl`
@@ -154,24 +144,33 @@ _EOF
     gitCompletionBashPath=~/.git-completion.bash
     cp -f contrib/completion/git-completion.bash $gitCompletionBashPath
     source $gitCompletionBashPath
+    cd $startDir
 
     cat << _EOF
     
 ------------------------------------------------------
 INSTALLING GIT DONE ...
-`./git --version`
+`$gitInstDir/bin/git --version`
 git path = $gitInstDir/bin/
 ------------------------------------------------------
 _EOF
 }
 
 install() {
-    installGit $1
+    installGit
 }
 
 case $1 in
-    'home' | 'root')
-        install $1
+    'home')
+        commInstdir=$homeInstDir
+        execPrefix=""
+        install
+    ;;
+
+    'root')
+        commInstdir=$rootInstDir
+        execPrefix=sudo
+        install
     ;;
 
     *)
