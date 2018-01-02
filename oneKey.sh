@@ -62,6 +62,18 @@ STEP 1: INSTALLING GIT ...
 ------------------------------------------------------
 _EOF
 
+    execPrefix=""
+    case $1 in
+        'home')
+            commInstdir=$homeInstDir
+        ;;
+
+        'root')
+            commInstdir=$rootInstDir
+            execPrefix=sudo
+        ;;
+    esac
+
     # libcurl  libcurl - Library to transfer files with ftp, http, etc.
     whereIsLibcurl=`pkg-config --list-all | grep -i curl`
     if [[ "$whereIsLibcurl" == "" ]]; then
@@ -96,17 +108,6 @@ _EOF
             ;;
         esac
     fi
-
-    execPrefix=""
-    case $1 in
-        'home')
-        ;;
-
-        'root')
-            commInstdir=$rootInstDir
-            execPrefix=sudo
-        ;;
-    esac
 
     gitInstDir=$commInstdir
     $execPrefix mkdir -p $commInstdir
