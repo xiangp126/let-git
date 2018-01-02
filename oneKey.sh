@@ -13,7 +13,6 @@ rootInstDir=/usr/local
 commInstdir=$homeInstDir
 execPrefix=""
 # GIT install
-gitInstDir=$commInstdir
 
 # depends pkgs for Ubuntu
 ubuntuMissPkgs=(
@@ -63,7 +62,6 @@ installGit() {
 STEP 1: INSTALLING GIT ...
 ------------------------------------------------------
 _EOF
-
     # libcurl  libcurl - Library to transfer files with ftp, http, etc.
     whereIsLibcurl=`pkg-config --list-all | grep -i curl`
     if [[ "$whereIsLibcurl" == "" ]]; then
@@ -135,6 +133,11 @@ _EOF
 	fi
 
     $execPrefix make install
+    if [[ "$execPrefix" == "sudo" ]]; then
+        whoAmI=`whoami`
+        tackleDir=~/.usr
+        sudo chown -R $whoAmI:$whoAmI $tackleDir
+    fi
 
     cat << "_EOF"
 ------------------------------------------------------
