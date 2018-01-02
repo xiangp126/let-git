@@ -13,6 +13,18 @@ rootInstDir=/usr/local
 commInstdir=$homeInstDir
 gitInstDir=$commInstdir
 
+# depends pkgs for Ubuntu
+ubuntuMissPkgs=(
+    "libcurl4-openssl-dev"
+    # "libssl-dev"     # will be installed along with libcurl4-openssl-dev
+    "automake"
+)
+# depends pkgs for CentOS
+centOSMissPkgs=(
+    "libcurl-devel"
+    "automake"
+)
+
 logo() {
     cat << "_EOF"
   ____ ___ _____
@@ -50,58 +62,40 @@ STEP 1: INSTALLING GIT ...
 ------------------------------------------------------
 _EOF
 
-    # check OS Type first.
-    osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
-        grep -i "[ubuntu|centos]"`
-    
-    case "$osType" in
-        'CentOS')
-            echo OS is CentOS
-            sudo yum install libcurl-devel
-        ;;
-    
-        'Ubuntu')
-            echo OS is Ubuntu
-            sudo apt-get install libcurl4-openssl-dev
-            sudo apt-get install libssl-dev automake
-        ;;
-    
-        *)
-            echo Not Ubuntu or CentOS, not sure whether this script would work
-            echo Please check it yourself ...
-            exit
-        ;;
-    esac
+    # libcurl  libcurl - Library to transfer files with ftp, http, etc.
+    whereIsLibcurl=`pkg-config --list-all | grep -i curl`
+    if [[ "$whereIsLibcurl" == "" ]]; then
+        echo No libcurl-dev found, install it first 
+        echo verifying platform is Ubuntu or Centos ...
+        osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
+            grep -i "[ubuntu|centos]"`
 
-#    # libcurl  libcurl - Library to transfer files with ftp, http, etc.
-#    whereIsLibcurl=`pkg-config --list-all | grep -i curl`
-#    if [[ "$whereIsLibcurl" == "" ]]; then
-#        echo No libcurl-dev found, install it first 
-#        echo verifying platform is Ubuntu or Centos ...
-#        osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
-#            grep -i "[ubuntu|centos]"`
-#
-#        case "$osType" in
-#            'CentOS')
-#                echo OS is CentOS
-#                sudo yum install libcurl-devel
-#            ;;
-#
-#            'Ubuntu')
-#                echo OS is Ubuntu
-#                sudo apt-get install libcurl4-openssl-dev
-#                sudo apt-get install libssl-dev
-#                sudo apt-get install automake
-#            ;;
-#
-#            *)
-#                echo Not Ubuntu or CentOS, not sure whether this script would work
-#                echo Please check it yourself ...
-#                exit
-#            ;;
-#        esac
-#
-#    fi
+        # fix dependency all together.
+        case "$osType" in
+            'CentOS')
+                echo "OS is CentOS ..."
+                for pkg in ${centOSMissPkgs[@]}
+                do
+                    sudo yum install $pkg -y
+                done
+            ;;
+
+            'Ubuntu')
+                echo "OS is Ubuntu..."
+                for pkg in ${ubuntuMissPkgs[@]}
+                do
+                    sudo apt-get install $pkg -y
+                done
+            ;;
+
+            *)
+                echo Not Ubuntu or CentOS
+                echo not sure whether this script would work
+                echo Please check it yourself ...
+                exit
+            ;;
+        esac
+    fi
 
     execPrefix=""
     case $1 in
@@ -174,7 +168,6 @@ install() {
     installGit $1
 }
 
-echo $1
 case $1 in
     'home' | 'root')
         install $1
