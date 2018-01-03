@@ -252,8 +252,12 @@ _EOF
     git checkout $checkoutVersion
     # run make routine
     make configure
-    ./configure --prefix=$gitInstDir --with-curl=$curlPath \
-                --with-expat=$expatPath
+    if [[ "$execPrefix" == "sudo" ]]; then
+        ./configure --prefix=$gitInstDir
+    else
+        ./configure --prefix=$gitInstDir --with-curl=$curlPath \
+            --with-expat=$expatPath
+    fi
     make -j
 
 	# check if make returns successfully
