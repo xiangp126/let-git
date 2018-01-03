@@ -22,7 +22,7 @@ $ sh oneKey.sh
 | |_| || |  | |
  \____|___| |_|
 
-$ sh oneKey.sh install
+$ sh oneKey.sh home
 
 ```
 
