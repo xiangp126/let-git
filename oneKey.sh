@@ -54,49 +54,178 @@ _EOF
 	logo
 }
 
+installLibCurl() {
+    
+    cat << "_EOF"
+    
+------------------------------------------------------
+STEP 1: INSTALLING LIBCURL ...
+------------------------------------------------------
+_EOF
+    # libcurl  libcurl - Library to transfer files with ftp, http, etc.
+    # -I/users/vbird/.usr/include
+    whereIsLibcurl=`pkg-config --cflags libcurl`
+    if [[ "$whereIsLibcurl" != "" ]]; then
+        tmpPath=${whereIsLibcurl%%include*}    # -I/users/vbird/.usr
+        curlPath=${tmpPath#*I}                 # /users/vbird/.usr
+        echo [Warning]: system already has libcurl installed, omitting it ...
+        return
+    fi
+
+    libcurlInstDir=$commInstdir
+    wgetLink=https://curl.haxx.se/download
+    tarName=curl-7.57.0.tar.gz
+    untarName=curl-7.57.0
+
+    # rename download package
+    cd $startDir
+    # check if already has this tar ball.
+    if [[ -f $tarName ]]; then
+        echo [Warning]: Tar Ball $tarName already exists, Omitting wget ...
+    else
+        wget --no-cookies \
+            --no-check-certificate \
+            --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+            "${wgetLink}/${tarName}" \
+            -O $tarName
+        # check if wget returns successfully
+        if [[ $? != 0 ]]; then
+            echo [Error]: wget returns error, quiting now ...
+            exit
+        fi
+    fi
+
+    tar -zxv -f $tarName
+    cd $untarName
+    ./configure --prefix=$libcurlInstDir
+    make -j
+
+    # check if make returns successfully
+    if [[ $? != 0 ]]; then
+        echo [Error]: make returns error, quiting now ...
+        exit
+    fi
+
+    $execPrefix make install
+
+    cat << _EOF
+------------------------------------------------------
+INSTALLING LIBCURL DONE ...
+------------------------------------------------------
+_EOF
+}
+
+installExpat() {
+    cat << "_EOF"
+    
+------------------------------------------------------
+STEP 2: INSTALLING EXPAT ...
+------------------------------------------------------
+_EOF
+    # expat                       expat - expat XML parser
+    # -I/users/vbird/.usr/include
+    whereIsExpat=`pkg-config --cflags expat`
+    if [[ "$whereIsExpat" != "" ]]; then
+        tmpPath=${whereIsExpat%%include*}       # -I/users/vbird/.usr
+        expatPath=${tmpPath#*I}                 # /users/vbird/.usr
+        echo [Warning]: system already has libcurl installed, omitting it ...
+        return
+    fi
+
+    expatInstDir=$commInstdir
+    wgetLink=https://nchc.dl.sourceforge.net/project/expat/expat/2.2.5
+    tarName=expat-2.2.5.tar.bz2
+    untarName=expat-2.2.5
+
+    # rename download package
+    cd $startDir
+    # check if already has this tar ball.
+    if [[ -f $tarName ]]; then
+        echo [Warning]: Tar Ball $tarName already exists, Omitting wget ...
+    else
+        wget --no-cookies \
+            --no-check-certificate \
+            --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+            "${wgetLink}/${tarName}" \
+            -O $tarName
+        # check if wget returns successfully
+        if [[ $? != 0 ]]; then
+            echo [Error]: wget returns error, quiting now ...
+            exit
+        fi
+    fi
+
+    tar -jxv -f $tarName
+    cd $untarName
+    ./configure --prefix=$expatInstDir
+    make -j
+
+    # check if make returns successfully
+    if [[ $? != 0 ]]; then
+        echo [Error]: make returns error, quiting now ...
+        exit
+    fi
+
+    $execPrefix make install
+
+    cat << _EOF
+------------------------------------------------------
+INSTALLING LIBCURL DONE ...
+------------------------------------------------------
+_EOF
+}
+
+# fix dependency for root mode
+fixDepends() {
+    cat << "_EOF"
+    
+------------------------------------------------------
+FIX DEPENDENCY ...
+------------------------------------------------------
+_EOF
+    osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
+        grep -i "[ubuntu|centos]"`
+    # fix dependency all together.
+    case "$osType" in
+        'Ubuntu')
+            echo "OS is Ubuntu..."
+            for pkg in ${ubuntuMissPkgs[@]}
+            do
+                sudo apt-get install $pkg -y
+            done
+        ;;
+
+        'CentOS' | 'Red')
+            echo "OS is CentOS or Red Hat..."
+            for pkg in ${centOSMissPkgs[@]}
+            do
+                sudo yum install $pkg -y
+            done
+        ;;
+
+        *)
+            echo Not Ubuntu or CentOS
+            echo not sure whether this script would work
+            echo Please check it yourself ...
+            exit
+        ;;
+    esac
+    cat << "_EOF"
+    
+------------------------------------------------------
+FIX DEPENDENCY DONE ...
+------------------------------------------------------
+_EOF
+}
+
 installGit() {
     
     cat << "_EOF"
     
 ------------------------------------------------------
-STEP 1: INSTALLING GIT ...
+STEP LAST: INSTALLING GIT ...
 ------------------------------------------------------
 _EOF
-    # libcurl  libcurl - Library to transfer files with ftp, http, etc.
-    whereIsLibcurl=`pkg-config --list-all | grep -i curl`
-    if [[ "$whereIsLibcurl" == "" ]]; then
-        echo No libcurl-dev found, install it first 
-        echo verifying platform is Ubuntu or Centos ...
-        osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
-            grep -i "[ubuntu|centos]"`
-
-        # fix dependency all together.
-        case "$osType" in
-            'CentOS')
-                echo "OS is CentOS ..."
-                for pkg in ${centOSMissPkgs[@]}
-                do
-                    sudo yum install $pkg -y
-                done
-            ;;
-
-            'Ubuntu')
-                echo "OS is Ubuntu..."
-                for pkg in ${ubuntuMissPkgs[@]}
-                do
-                    sudo apt-get install $pkg -y
-                done
-            ;;
-
-            *)
-                echo Not Ubuntu or CentOS
-                echo not sure whether this script would work
-                echo Please check it yourself ...
-                exit
-            ;;
-        esac
-    fi
-
     gitInstDir=$commInstdir
     $execPrefix mkdir -p $commInstdir
     # comm attribute to get source 'git'
@@ -123,8 +252,9 @@ _EOF
     git checkout $checkoutVersion
     # run make routine
     make configure
-    ./configure --prefix=$gitInstDir
-    make -j 1
+    ./configure --prefix=$gitInstDir --with-curl=$curlPath \
+                --with-expat=$expatPath
+    make -j
 
 	# check if make returns successfully
 	if [[ $? != 0 ]]; then
@@ -160,6 +290,8 @@ _EOF
 }
 
 install() {
+    installLibCurl
+    installExpat
     installGit
 }
 
@@ -167,13 +299,16 @@ case $1 in
     'home')
         commInstdir=$homeInstDir
         execPrefix=""
-        install
+        installLibCurl
+        installExpat
+        installGit
     ;;
 
     'root')
         commInstdir=$rootInstDir
         execPrefix=sudo
-        install
+        fixDepends
+        installGit
     ;;
 
     *)
