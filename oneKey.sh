@@ -19,11 +19,15 @@ ubuntuMissPkgs=(
     "libcurl4-openssl-dev"
     # "libssl-dev"     # will be installed along with libcurl4-openssl-dev
     "automake"
+    "asciidoc"
+    "xmlto"
 )
 # depends pkgs for CentOS
 centOSMissPkgs=(
     "libcurl-devel"
     "automake"
+    "asciidoc"
+    "xmlto"
 )
 
 logo() {
@@ -252,23 +256,29 @@ _EOF
     make configure
     if [[ "$execPrefix" == "sudo" ]]; then
         ./configure --prefix=$gitInstDir
-    else
-        ./configure --prefix=$gitInstDir --with-curl=$curlPath \
-            --with-expat=$expatPath
-    fi
-    make -j
+        make all doc -j
+        # check if make returns successfully
+        if [[ $? != 0 ]]; then
+            echo [Error]: make returns error, quiting now ...
+            exit
+        fi
 
-	# check if make returns successfully
-	if [[ $? != 0 ]]; then
-		echo [Error]: make returns error, quiting now ...
-		exit
-	fi
-
-    $execPrefix make install
-    if [[ "$execPrefix" == "sudo" ]]; then
+        sudo make install install-doc install-html
+        # fix small issue
         whoAmI=`whoami`
         tackleDir=~/.usr
         sudo chown -R $whoAmI:$whoAmI $tackleDir
+    else
+        ./configure --prefix=$gitInstDir --with-curl=$curlPath \
+            --with-expat=$expatPath
+        make -j
+        # check if make returns successfully
+        if [[ $? != 0 ]]; then
+            echo [Error]: make returns error, quiting now ...
+            exit
+        fi
+
+        make install
     fi
 
     cat << "_EOF"
