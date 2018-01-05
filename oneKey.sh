@@ -178,6 +178,120 @@ INSTALLING LIBCURL DONE ...
 _EOF
 }
 
+installAsciidoc() {
+    cat << "_EOF"
+    
+------------------------------------------------------
+STEP : INSTALLING ASCIIDOC ...
+------------------------------------------------------
+_EOF
+    if [[ `which asciidoc 2> /dev/null` != "" ]]; then
+        echo [Warning] Already has asciidoc installed, omitting this step ...
+        return
+    fi
+    asciidocInstDir=$commInstdir
+    $execPrefix mkdir -p $commInstdir
+    # comm attribute to get source 'git'
+    gitClonePath=https://github.com/asciidoc/asciidoc
+    clonedName=asciidoc
+    checkoutVersion=8.6.10
+
+    # rename download package
+    cd $startDir
+    # check if already has this tar ball.
+    if [[ -d $clonedName ]]; then
+        echo [Warning]: target $clonedName/ already exists, Omitting now ...
+    else
+        git clone ${gitClonePath} $clonedName
+        # check if git clone returns successfully
+        if [[ $? != 0 ]]; then
+            echo [Error]: git clone returns error, quiting now ...
+            exit
+        fi
+    fi
+
+    cd $clonedName
+    # checkout 
+    git checkout $checkoutVersion
+    # run make routine
+    autoconf
+    ./configure --prefix=$asciidocInstDir
+    make -j
+    # check if make returns successfully
+    if [[ $? != 0 ]]; then
+        echo [Error]: make returns error, quiting now ...
+        exit
+    fi
+    make install
+    cd $startDir
+
+    cat << _EOF
+    
+------------------------------------------------------
+INSTALLING ASCIIDOC DONE ...
+`$asciidocInstDir/bin/asciidoc --version`
+asciidoc path = $asciidocInstDir/bin/
+------------------------------------------------------
+_EOF
+}
+
+installXmlto() {
+    cat << "_EOF"
+    
+------------------------------------------------------
+STEP : INSTALLING XMLTO ...
+------------------------------------------------------
+_EOF
+    if [[ "`which xmlto 2> /dev/null`" != "" ]]; then
+        echo [Warning]: Already has xmlto installed, omitting this step ...
+        return
+    fi
+
+    xmltoInstDir=$commInstdir
+    wgetLink=https://releases.pagure.org/xmlto
+    tarName=xmlto-0.0.21.tar.bz2
+    untarName=xmlto-0.0.21
+
+    # rename download package
+    cd $startDir
+    # check if already has this tar ball.
+    if [[ -f $tarName ]]; then
+        echo [Warning]: Tar Ball $tarName already exists, Omitting wget ...
+    else
+        wget --no-cookies \
+            --no-check-certificate \
+            --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+            "${wgetLink}/${tarName}" \
+            -O $tarName
+        # check if wget returns successfully
+        if [[ $? != 0 ]]; then
+            echo [Error]: wget returns error, quiting now ...
+            exit
+        fi
+    fi
+
+    tar -jxv -f $tarName
+    cd $untarName
+    ./configure --prefix=$xmltoInstDir
+    make check
+    # check if make returns successfully
+    if [[ $? != 0 ]]; then
+        echo [Error]: make returns error, quiting now ...
+        exit
+    fi
+
+    make -j
+    $execPrefix make install
+
+    cat << _EOF
+------------------------------------------------------
+INSTALLING XMLTO DONE ...
+`$xmltoInstDir/bin/xmlto --version`
+xmlto path = $xmltoInstDir/bin/
+------------------------------------------------------
+_EOF
+}
+
 # fix dependency for root mode
 fixDepends() {
     cat << "_EOF"
@@ -256,29 +370,24 @@ _EOF
     make configure
     if [[ "$execPrefix" == "sudo" ]]; then
         ./configure --prefix=$gitInstDir
-        make all doc -j
-        # check if make returns successfully
-        if [[ $? != 0 ]]; then
-            echo [Error]: make returns error, quiting now ...
-            exit
-        fi
-
-        sudo make install install-doc install-html
-        # fix small issue
-        whoAmI=`whoami`
-        tackleDir=~/.usr
-        sudo chown -R $whoAmI:$whoAmI $tackleDir
     else
         ./configure --prefix=$gitInstDir --with-curl=$curlPath \
             --with-expat=$expatPath
-        make -j
-        # check if make returns successfully
-        if [[ $? != 0 ]]; then
-            echo [Error]: make returns error, quiting now ...
-            exit
-        fi
+    fi
 
-        make install
+    make all doc -j
+    # check if make returns successfully
+    if [[ $? != 0 ]]; then
+        echo [Error]: make returns error, quiting now ...
+        exit
+    fi
+
+    $execPrefix make install install-doc install-html
+    # fix small issue after install git
+    if [[ "$execPrefix" == "sudo" ]]; then
+        whoAmI=`whoami`
+        tackleDir=~/.usr
+        sudo chown -R $whoAmI:$whoAmI $tackleDir
     fi
 
     cat << "_EOF"
@@ -313,6 +422,8 @@ case $1 in
         execPrefix=""
         installLibCurl
         installExpat
+        installAsciidoc
+        installXmlto
         installGit
     ;;
 
