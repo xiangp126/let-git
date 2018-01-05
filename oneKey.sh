@@ -21,6 +21,7 @@ ubuntuMissPkgs=(
     "automake"
     "asciidoc"
     "xmlto"
+    "libperl-dev"
 )
 # depends pkgs for CentOS
 centOSMissPkgs=(
@@ -28,6 +29,7 @@ centOSMissPkgs=(
     "automake"
     "asciidoc"
     "xmlto"
+    "perl-devel"
 )
 
 logo() {
