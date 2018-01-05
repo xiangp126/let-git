@@ -185,7 +185,7 @@ installAsciidoc() {
 STEP : INSTALLING ASCIIDOC ...
 ------------------------------------------------------
 _EOF
-    if [[ `which asciidoc 2> /dev/null` != "" ]]; then
+    if [[ "`which asciidoc 2> /dev/null`" != "" ]]; then
         echo [Warning] Already has asciidoc installed, omitting this step ...
         return
     fi
