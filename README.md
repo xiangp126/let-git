@@ -1,7 +1,8 @@
 # Installation Guide
-onekey to install git version 2.15.0, need old version git
-
-suitable for Ubuntu and CentOS
+- Need old versioni git
+- Install git latest fromm source
+- Done everything for me by just single command
+- Has checked on Ubuntu | CentOS
 
 ```bash
 $ sh oneKey.sh
@@ -25,5 +26,3 @@ $ sh oneKey.sh
 $ sh oneKey.sh home
 
 ```
-
-

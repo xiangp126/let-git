@@ -60,7 +60,7 @@ usage() {
 
 _EOF
     set +x
-	logo
+    logo
 }
 
 checkOsCpus() {
@@ -214,7 +214,7 @@ _EOF
     fi
 
     cd $clonedName
-    # checkout 
+    # checkout
     git checkout $checkoutVersion
     # run make routine
     autoconf
@@ -229,7 +229,7 @@ _EOF
     cd $startDir
 
     cat << _EOF
-    
+
 ------------------------------------------------------
 INSTALLING ASCIIDOC DONE ...
 `$asciidocInstDir/bin/asciidoc --version`
