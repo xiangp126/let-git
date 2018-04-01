@@ -358,14 +358,15 @@ _EOF
     fi
 
     # make all doc -j
-    make -j
+    make all -j
     # check if make returns successfully
     if [[ $? != 0 ]]; then
         echo [Error]: make returns error, quiting now ...
         exit
     fi
 
-    $execPrefix make install install-doc install-html
+    # $execPrefix make install install-doc install-html
+    $execPrefix make install
     # fix small issue after install git
     if [[ "$execPrefix" == "sudo" ]]; then
         whoAmI=`whoami`
@@ -394,12 +395,13 @@ _EOF
 
 install() {
     mkdir -p $downloadPath
+    source ~/.bashrc &> /dev/null
+
     installLibCurl
     installExpat
-    # installXmlto
     # installAsciidoc
+    # installXmlto
     installGit
-    source ~/.bashrc &> /dev/null
 }
 
 case $1 in
