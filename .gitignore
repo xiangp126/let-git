@@ -1,7 +1,3 @@
 *.swp
 *.swo
-git/
-curl-*
-expat-*
-asciidoc/
-xmlto-*
+downloads/

@@ -1,10 +1,7 @@
 #!/bin/bash
-set -x
-# this shell start dir, normally original path
 startDir=`pwd`
-# main work directory
-mainWd=$startDir
-
+# main work directory, not influenced by start dir
+mainWd=$(cd $(dirname $0); pwd)
 # GIT install
 # common install dir for home | root mode
 homeInstDir=~/.usr
@@ -13,8 +10,7 @@ rootInstDir=/usr/local
 commInstdir=$homeInstDir
 #sudo or empty
 execPrefix=""
-#how many cpus os has, used for make -j
-osCpus=1
+downloadPath=$mainWd/downloads
 
 # depends pkgs for Ubuntu
 ubuntuMissPkgs=(
@@ -36,11 +32,12 @@ centOSMissPkgs=(
 
 logo() {
     cat << "_EOF"
-  ____ ___ _____
- / ___|_ _|_   _|
-| |  _ | |  | |
-| |_| || |  | |
- \____|___| |_|
+ _      _        _ _
+| | ___| |_ __ _(_) |_
+| |/ _ \ __/ _` | | __|
+| |  __/ || (_| | | |_
+|_|\___|\__\__, |_|\__|
+           |___/
 
 _EOF
 }
@@ -59,32 +56,18 @@ usage() {
     root -- install to $rootInstDir/
 
 _EOF
-    set +x
     logo
-}
-
-checkOsCpus() {
-    if [[ "`which lscpu 2> /dev/null`" == "" ]]; then
-        echo [Warning]: OS has no lscpu installed, omitting this ...
-        return
-    fi
-    #set new os cpus
-    osCpus=`lscpu | grep -i "^CPU(s):" | tr -s " " | cut -d " " -f 2`
-    if [[ "$osCpus" == "" ]]; then
-        osCpus=1
-    fi
-    echo "OS has CPU(S): $osCpus"
 }
 
 installLibCurl() {
     cat << "_EOF"
 ------------------------------------------------------
-STEP 1: INSTALLING LIBCURL ...
+INSTALLING LIBCURL ...
 ------------------------------------------------------
 _EOF
     # libcurl  libcurl - Library to transfer files with ftp, http, etc.
     # -I/users/vbird/.usr/include
-    whereIsLibcurl=`pkg-config --cflags libcurl`
+    whereIsLibcurl=`pkg-config --cflags libcurl 2> /dev/null`
     if [[ "$whereIsLibcurl" != "" ]]; then
         tmpPath=${whereIsLibcurl%%include*}    # -I/users/vbird/.usr
         curlPath=${tmpPath#*I}                 # /users/vbird/.usr
@@ -98,7 +81,7 @@ _EOF
     untarName=curl-7.57.0
 
     # rename download package
-    cd $startDir
+    cd $downloadPath
     # check if already has this tar ball.
     if [[ -f $tarName ]]; then
         echo [Warning]: Tar Ball $tarName already exists, Omitting wget ...
@@ -118,7 +101,7 @@ _EOF
     tar -zxv -f $tarName
     cd $untarName
     ./configure --prefix=$libcurlInstDir
-    make -j $osCpus
+    make -j
 
     # check if make returns successfully
     if [[ $? != 0 ]]; then
@@ -132,12 +115,12 @@ _EOF
 installExpat() {
     cat << "_EOF"
 ------------------------------------------------------
-STEP 2: INSTALLING EXPAT ...
+INSTALLING EXPAT ...
 ------------------------------------------------------
 _EOF
     # expat                       expat - expat XML parser
     # -I/users/vbird/.usr/include
-    whereIsExpat=`pkg-config --cflags expat`
+    whereIsExpat=`pkg-config --cflags expat 2> /dev/null`
     if [[ "$whereIsExpat" != "" ]]; then
         tmpPath=${whereIsExpat%%include*}       # -I/users/vbird/.usr
         expatPath=${tmpPath#*I}                 # /users/vbird/.usr
@@ -151,7 +134,7 @@ _EOF
     untarName=expat-2.2.5
 
     # rename download package
-    cd $startDir
+    cd $downloadPath
     # check if already has this tar ball.
     if [[ -f $tarName ]]; then
         echo [Warning]: Tar Ball $tarName already exists, Omitting wget ...
@@ -171,7 +154,7 @@ _EOF
     tar -jxv -f $tarName
     cd $untarName
     ./configure --prefix=$expatInstDir
-    make -j $osCpus
+    make -j
 
     # check if make returns successfully
     if [[ $? != 0 ]]; then
@@ -185,7 +168,7 @@ _EOF
 installAsciidoc() {
     cat << "_EOF"
 ------------------------------------------------------
-STEP : INSTALLING ASCIIDOC ...
+INSTALLING ASCIIDOC ...
 ------------------------------------------------------
 _EOF
     if [[ "`which asciidoc 2> /dev/null`" != "" ]]; then
@@ -200,7 +183,7 @@ _EOF
     checkoutVersion=8.6.10
 
     # rename download package
-    cd $startDir
+    cd $downloadPath
     # check if already has this tar ball.
     if [[ -d $clonedName ]]; then
         echo [Warning]: target $clonedName/ already exists, Omitting now ...
@@ -219,7 +202,7 @@ _EOF
     # run make routine
     autoconf
     ./configure --prefix=$asciidocInstDir
-    make -j $osCpus
+    make -j
     # check if make returns successfully
     if [[ $? != 0 ]]; then
         echo [Error]: make returns error, quiting now ...
@@ -241,7 +224,7 @@ _EOF
 installXmlto() {
     cat << "_EOF"
 ------------------------------------------------------
-STEP : INSTALLING XMLTO ...
+INSTALLING XMLTO ...
 ------------------------------------------------------
 _EOF
     if [[ "`which xmlto 2> /dev/null`" != "" ]]; then
@@ -255,7 +238,7 @@ _EOF
     untarName=xmlto-0.0.21
 
     # rename download package
-    cd $startDir
+    cd $downloadPath
     # check if already has this tar ball.
     if [[ -f $tarName ]]; then
         echo [Warning]: Tar Ball $tarName already exists, Omitting wget ...
@@ -282,7 +265,7 @@ _EOF
         exit
     fi
 
-    make -j $osCpus
+    make -j
     $execPrefix make install
 
     cat << _EOF
@@ -338,7 +321,7 @@ _EOF
 installGit() {
     cat << "_EOF"
 ------------------------------------------------------
-STEP LAST: INSTALLING GIT ...
+INSTALLING GIT ...
 ------------------------------------------------------
 _EOF
     gitInstDir=$commInstdir
@@ -349,7 +332,7 @@ _EOF
     checkoutVersion=v2.15.0
 
     # rename download package
-    cd $startDir
+    cd $downloadPath
     # check if already has this tar ball.
     if [[ -d $clonedName ]]; then
         echo [Warning]: target $clonedName/ already exists, Omitting now ...
@@ -374,7 +357,8 @@ _EOF
             --with-expat=$expatPath
     fi
 
-    make all doc -j
+    # make all doc -j
+    make -j
     # check if make returns successfully
     if [[ $? != 0 ]]; then
         echo [Error]: make returns error, quiting now ...
@@ -409,29 +393,33 @@ _EOF
 }
 
 install() {
+    mkdir -p $downloadPath
     installLibCurl
     installExpat
-    installAsciidoc
-    installXmlto
+    # installXmlto
+    # installAsciidoc
     installGit
+    source ~/.bashrc &> /dev/null
 }
 
 case $1 in
     'home')
+        set -x
         commInstdir=$homeInstDir
         execPrefix=""
         install
-    ;;
+        ;;
 
     'root')
+        set -x
         commInstdir=$rootInstDir
         execPrefix=sudo
         fixDepends
         install
-    ;;
+        ;;
 
     *)
         set +x
         usage
-    ;;
+        ;;
 esac
