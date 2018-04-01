@@ -1,6 +1,7 @@
 - Need old versioni git
-- Install git latest fromm source
 - Done everything for me by just single command
+- Install git latest fromm source
+- provide functions to install doc as well
 - Has checked on Ubuntu | CentOS
 
 ## Installation Guide
