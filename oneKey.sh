@@ -11,24 +11,7 @@ commInstdir=$homeInstDir
 #sudo or empty
 execPrefix=""
 downloadPath=$mainWd/downloads
-
-# depends pkgs for Ubuntu
-ubuntuMissPkgs=(
-    "libcurl4-openssl-dev"
-    # "libssl-dev"     # will be installed along with libcurl4-openssl-dev
-    "automake"
-    "asciidoc"
-    "xmlto"
-    "libperl-dev"
-)
-# depends pkgs for CentOS
-centOSMissPkgs=(
-    "libcurl-devel"
-    "automake"
-    "asciidoc"
-    "xmlto"
-    "perl-devel"
-)
+cpuCoreNum=""
 
 logo() {
     cat << "_EOF"
@@ -57,6 +40,21 @@ usage() {
 
 _EOF
     logo
+}
+
+checkCpuCoreNum() {
+    if [[ "`which lscpu 2> /dev/null`" == "" ]]; then
+        # echo [Warning]: OS has no lscpu installed, omitting this
+        # macos did not has lscpu, so remomve [job] restrict
+        cpuCoreNum=""
+        return
+    fi
+    # set new os cpus
+    cpuCoreNum=`lscpu | grep -i "^CPU(s):" | tr -s " " | cut -d " " -f 2`
+    if [[ "$cpuCoreNum" == "" ]]; then
+        cpuCoreNum=1
+    fi
+    # echo "OS has CPU(S): $cpuCoreNum"
 }
 
 installLibCurl() {
@@ -286,30 +284,27 @@ START TO FIX DEPENDENCY ...
 _EOF
     osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
         grep -i "[ubuntu|centos]"`
-    # fix dependency all together.
+
     case "$osType" in
         'Ubuntu')
             echo "OS is Ubuntu..."
-            for pkg in ${ubuntuMissPkgs[@]}
-            do
-                sudo apt-get install $pkg -y
-            done
-        ;;
+            sudo apt-get install libcurl4-openssl-dev \
+                automake asciidoc xmlto libperl-dev \
+                libssl-dev -y
+            ;;
 
         'CentOS' | 'Red')
             echo "OS is CentOS or Red Hat..."
-            for pkg in ${centOSMissPkgs[@]}
-            do
-                sudo yum install $pkg -y
-            done
-        ;;
+            sudo yum install libcurl-devel \
+                automake asciidoc xmlto perl-devel -y
+            ;;
 
         *)
             echo Not Ubuntu or CentOS
             echo not sure whether this script would work
             echo Please check it yourself ...
             exit
-        ;;
+            ;;
     esac
     cat << "_EOF"
 ------------------------------------------------------
@@ -329,7 +324,7 @@ _EOF
     # comm attribute to get source 'git'
     gitClonePath=https://github.com/git/git
     clonedName=git
-    checkoutVersion=v2.15.0
+    # checkoutVersion=v2.15.0
 
     # rename download package
     cd $downloadPath
@@ -346,8 +341,13 @@ _EOF
     fi
 
     cd $clonedName
-    # checkout to v2.15.0
-    git checkout $checkoutVersion
+    # checkout to latest released tag
+    git pull
+    latestTag=$(git describe --tags `git rev-list --tags --max-count=1`)
+    if [[ "$latestTag" != "" ]]; then
+        git checkout $latestTag
+    fi
+
     # run make routine
     make configure
     if [[ "$execPrefix" == "sudo" ]]; then
@@ -358,7 +358,7 @@ _EOF
     fi
 
     # make all doc -j
-    make all -j
+    make all -j $cpuCoreNum
     # check if make returns successfully
     if [[ $? != 0 ]]; then
         echo [Error]: make returns error, quiting now ...
@@ -397,6 +397,7 @@ install() {
     mkdir -p $downloadPath
     source ~/.bashrc &> /dev/null
 
+    checkCpuCoreNum
     installLibCurl
     installExpat
     # installAsciidoc
