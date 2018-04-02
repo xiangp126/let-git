@@ -1,7 +1,8 @@
-- Need old versioni git
-- Done everything for me by just single command
+- On some very old Linux server, you may need git relatively new version. but rarely need
 - Install git latest fromm source
-- provide functions to install doc as well
+    - Need old git to pull git from github
+    - provide functions to install doc as well
+- Done everything for me by just single command
 - Has checked on Ubuntu | CentOS
 
 ## Installation Guide
