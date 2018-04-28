@@ -15,12 +15,12 @@ cpuCoreNum=""
 
 logo() {
     cat << "_EOF"
- _      _        _ _
-| | ___| |_ __ _(_) |_
-| |/ _ \ __/ _` | | __|
-| |  __/ || (_| | | |_
-|_|\___|\__\__, |_|\__|
-           |___/
+ _      _            _ _
+| | ___| |_     __ _(_) |_
+| |/ _ \ __|__ / _` | | __|
+| |  __/ ||___| (_| | | |_
+|_|\___|\__|   \__, |_|\__|
+               |___/
 
 _EOF
 }
@@ -282,20 +282,23 @@ fixDepends() {
 START TO FIX DEPENDENCY ...
 ------------------------------------------------------
 _EOF
-    osType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
-        grep -i "[ubuntu|centos]"`
+    # Check if platform os type was passed from upper layer
+    if [[ "$platOsType" == "" ]]; then
+        platOsType=`sed -n '1p' /etc/issue | tr -s " " | cut -d " " -f 1 | \
+            grep -i "[ubuntu|centos]"`
+    fi
 
-    case "$osType" in
-        'Ubuntu')
+    case "$platOsType" in
+        'Ubuntu' | 'ubuntu')
             echo "OS is Ubuntu..."
             sudo apt-get install libcurl4-openssl-dev \
                 automake asciidoc xmlto libperl-dev \
                 libssl-dev -y
             ;;
 
-        'CentOS' | 'Red')
+        'CentOS' | 'centos' | 'Red' | 'redhat')
             echo "OS is CentOS or Red Hat..."
-            sudo yum install libcurl-devel \
+            sudo yum install libcurl-devel expat expat-devel \
                 automake asciidoc xmlto perl-devel -y
             ;;
 
