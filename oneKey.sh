@@ -29,7 +29,7 @@ usage() {
     exeName=${0##*/}
     cat << _EOF
 [NAME]
-    $exeName -- install newly Git through one script
+    $exeName -- install Git latest release through one script
 
 [SYNOPSIS]
     sh $exeName [home | root | help]
@@ -65,10 +65,10 @@ INSTALLING LIBCURL ...
 _EOF
     # libcurl  libcurl - Library to transfer files with ftp, http, etc.
     # -I/users/vbird/.usr/include
-    whereIsLibcurl=`pkg-config --cflags libcurl 2> /dev/null`
+    whereIsLibcurl=`pkg-config --libs libcurl 2> /dev/null`
     if [[ "$whereIsLibcurl" != "" ]]; then
-        tmpPath=${whereIsLibcurl%%include*}    # -I/users/vbird/.usr
-        curlPath=${tmpPath#*I}                 # /users/vbird/.usr
+        # tmpPath=${whereIsLibcurl%%include*}    # -I/users/vbird/.usr
+        # curlPath=${tmpPath#*I}                 # /users/vbird/.usr
         echo [Warning]: system already has libcurl installed, omitting it ...
         return
     fi
@@ -118,10 +118,10 @@ INSTALLING EXPAT ...
 _EOF
     # expat                       expat - expat XML parser
     # -I/users/vbird/.usr/include
-    whereIsExpat=`pkg-config --cflags expat 2> /dev/null`
+    whereIsExpat=`pkg-config --libs expat 2> /dev/null`
     if [[ "$whereIsExpat" != "" ]]; then
-        tmpPath=${whereIsExpat%%include*}       # -I/users/vbird/.usr
-        expatPath=${tmpPath#*I}                 # /users/vbird/.usr
+        # tmpPath=${whereIsExpat%%include*}       # -I/users/vbird/.usr
+        # expatPath=${tmpPath#*I}                 # /users/vbird/.usr
         echo [Warning]: system already has libcurl installed, omitting it ...
         return
     fi
@@ -354,13 +354,14 @@ _EOF
     # run make routine
     make configure
     if [[ "$execPrefix" == "sudo" ]]; then
-        ./configure --prefix=$gitInstDir
+        ./configure --prefix=$gitInstDir --with-curl --with-expat
     else
-        ./configure --prefix=$gitInstDir --with-curl=$curlPath \
-            --with-expat=$expatPath
+        # --with-curl  support http(s):// transports (default is YES)
+        # --with-expat support git-push using http:// and https://
+        ./configure --prefix=$gitInstDir --with-curl --with-expat
     fi
 
-    # make all doc -j
+    make all doc -j
     make all -j $cpuCoreNum
     # check if make returns successfully
     if [[ $? != 0 ]]; then
@@ -403,8 +404,8 @@ install() {
     checkCpuCoreNum
     installLibCurl
     installExpat
-    # installAsciidoc
-    # installXmlto
+    installAsciidoc
+    installXmlto
     installGit
 }
 

@@ -1,4 +1,4 @@
-- On some very old Linux server, you may need git relatively new version. but rarely need
+- On 'old' Linux server, you may need git relatively new version(though not often).
 - Install git latest fromm source
     - Need old git to pull git from github
     - provide functions to install doc as well
@@ -9,21 +9,22 @@
 ```bash
 $ sh oneKey.sh
 [NAME]
-    oneKey.sh -- setup Git through one script
+    oneKey.sh -- install Git latest release through one script
 
 [SYNOPSIS]
-    oneKey.sh [home | root | help]
+    sh oneKey.sh [home | root | help]
 
 [DESCRIPTION]
     home -- install to ~/.usr/
     root -- install to /usr/local/
 
- _      _        _ _
-| | ___| |_ __ _(_) |_
-| |/ _ \ __/ _` | | __|
-| |  __/ || (_| | | |_
-|_|\___|\__\__, |_|\__|
-           |___/
+ _      _            _ _
+| | ___| |_     __ _(_) |_
+| |/ _ \ __|__ / _` | | __|
+| |  __/ ||___| (_| | | |_
+|_|\___|\__|   \__, |_|\__|
+               |___/
+
 ```
 
 ```bash
