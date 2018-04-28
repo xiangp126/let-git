@@ -196,7 +196,7 @@ _EOF
 
     cd $clonedName
     # checkout
-    git checkout $checkoutVersion
+    git checkout $checkoutVersion -f
     # run make routine
     autoconf
     ./configure --prefix=$asciidocInstDir
@@ -296,7 +296,7 @@ _EOF
                 libssl-dev -y
             ;;
 
-        'CentOS' | 'centos' | 'Red' | 'redhat')
+        'CentOS' | 'centos' | '\S' | 'Red' | 'redhat')
             echo "OS is CentOS or Red Hat..."
             sudo yum install libcurl-devel expat expat-devel \
                 automake asciidoc xmlto perl-devel -y
