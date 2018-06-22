@@ -335,7 +335,7 @@ _EOF
     if [[ -d $clonedName ]]; then
         echo [Warning]: target $clonedName/ already exists, Omitting now ...
     else
-        git clone ${gitClonePath} $clonedName
+        git clone ${gitClonePath} $clonedName --depth 1
         # check if git clone returns successfully
         if [[ $? != 0 ]]; then
             echo [Error]: git clone returns error, quiting now ...
@@ -361,7 +361,7 @@ _EOF
         ./configure --prefix=$gitInstDir --with-curl --with-expat
     fi
 
-    make all doc -j
+    make all doc -j 1
     make all -j $cpuCoreNum
     # check if make returns successfully
     if [[ $? != 0 ]]; then
